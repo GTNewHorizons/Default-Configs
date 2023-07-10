@@ -1,13 +1,13 @@
 package net.blay09.mods.defaultkeys.localconfig;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SimpleConfigHandler {
 
@@ -16,7 +16,7 @@ public class SimpleConfigHandler {
     public static void backup(PrintWriter writer, List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -26,10 +26,10 @@ public class SimpleConfigHandler {
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             String line;
             StringBuilder buffer = new StringBuilder();
-            lineLoop:while ((line = reader.readLine()) != null) {
-                charLoop:for (int i = 0; i < line.length(); i++) {
+            lineLoop: while ((line = reader.readLine()) != null) {
+                charLoop: for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
-                    if(isInQuotes) {
+                    if (isInQuotes) {
                         if (c == '"') {
                             isInQuotes = false;
                         }
@@ -45,7 +45,9 @@ public class SimpleConfigHandler {
                                 buffer.append(c);
                                 break;
                             case '{':
-                                categoryPath.add(buffer.toString().trim());
+                                categoryPath.add(
+                                    buffer.toString()
+                                        .trim());
                                 buffer = new StringBuilder();
                                 break;
                             case '}':
@@ -53,21 +55,23 @@ public class SimpleConfigHandler {
                                 break;
                             case '=':
                                 category = StringUtils.join(categoryPath, ".");
-                                name = buffer.toString().trim();
+                                name = buffer.toString()
+                                    .trim();
                                 buffer = new StringBuilder();
                                 String value = line.substring(i + 1);
-                                for(int j = 0; j < entries.size(); j++) {
+                                for (int j = 0; j < entries.size(); j++) {
                                     LocalConfigEntry entry = entries.get(j);
-                                    if(entry.passesProperty(category, name, "*")) {
+                                    if (entry.passesProperty(category, name, "*")) {
                                         foundProperty[j] = true;
-                                        if(entry.containsWildcard()) {
-                                            for(LocalConfigEntry notEntry : notEntries) {
-                                                if(notEntry.passesProperty(category, name, "*")) {
+                                        if (entry.containsWildcard()) {
+                                            for (LocalConfigEntry notEntry : notEntries) {
+                                                if (notEntry.passesProperty(category, name, "*")) {
                                                     continue lineLoop;
                                                 }
                                             }
                                         }
-                                        writer.println(entry.getIdentifier(entry.file, category, "*", name) + "=" + value);
+                                        writer.println(
+                                            entry.getIdentifier(entry.file, category, "*", name) + "=" + value);
                                         break;
                                     }
                                 }
@@ -78,9 +82,12 @@ public class SimpleConfigHandler {
                     }
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to backup local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to backup local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {
@@ -91,7 +98,7 @@ public class SimpleConfigHandler {
     public static void restore(List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -99,19 +106,19 @@ public class SimpleConfigHandler {
         File backupFile = new File(configFile.getParentFile(), configFile.getName() + ".bak");
         try {
             FileUtils.copyFile(configFile, backupFile);
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error("Could not create backup file {}: {}", backupFile, e);
         }
         try {
             List<String> lines = FileUtils.readLines(configFile);
-            try(PrintWriter writer = new PrintWriter(configFile)) {
+            try (PrintWriter writer = new PrintWriter(configFile)) {
                 List<String> categoryPath = new ArrayList<>();
                 boolean isInQuotes = false;
                 StringBuilder buffer = new StringBuilder();
                 for (String line : lines) {
-                    charLoop:for (int i = 0; i < line.length(); i++) {
+                    charLoop: for (int i = 0; i < line.length(); i++) {
                         char c = line.charAt(i);
-                        if(isInQuotes) {
+                        if (isInQuotes) {
                             if (c == '"') {
                                 isInQuotes = false;
                             }
@@ -127,7 +134,9 @@ public class SimpleConfigHandler {
                                     buffer.append(c);
                                     break;
                                 case '{':
-                                    categoryPath.add(buffer.toString().trim());
+                                    categoryPath.add(
+                                        buffer.toString()
+                                            .trim());
                                     buffer = new StringBuilder();
                                     break;
                                 case '}':
@@ -135,15 +144,16 @@ public class SimpleConfigHandler {
                                     break;
                                 case '=':
                                     category = StringUtils.join(categoryPath, ".");
-                                    name = buffer.toString().trim();
+                                    name = buffer.toString()
+                                        .trim();
                                     buffer = new StringBuilder();
-                                    for(int j = 0; j < entries.size(); j++) {
+                                    for (int j = 0; j < entries.size(); j++) {
                                         LocalConfigEntry entry = entries.get(j);
-                                        if(entry.passesProperty(category, name, "*")) {
+                                        if (entry.passesProperty(category, name, "*")) {
                                             foundProperty[j] = true;
-                                            if(entry.containsWildcard()) {
-                                                for(LocalConfigEntry notEntry : notEntries) {
-                                                    if(notEntry.passesProperty(category, name, "*")) {
+                                            if (entry.containsWildcard()) {
+                                                for (LocalConfigEntry notEntry : notEntries) {
+                                                    if (notEntry.passesProperty(category, name, "*")) {
                                                         break charLoop;
                                                     }
                                                 }
@@ -161,9 +171,12 @@ public class SimpleConfigHandler {
                     writer.println(line);
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to restore local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to restore local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {

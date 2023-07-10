@@ -1,13 +1,13 @@
 package net.blay09.mods.defaultkeys.localconfig;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LocalConfigEntry {
 
@@ -23,7 +23,8 @@ public class LocalConfigEntry {
     public final String value;
     public final Map<String, String> parameters;
 
-    public LocalConfigEntry(String file, String type, String category, String name, String value, boolean not, Map<String, String> parameters) {
+    public LocalConfigEntry(String file, String type, String category, String name, String value, boolean not,
+        Map<String, String> parameters) {
         this.file = file;
         this.type = type;
         this.category = category;
@@ -34,10 +35,14 @@ public class LocalConfigEntry {
     }
 
     public static LocalConfigEntry fromString(String line, boolean withValue) throws IOException {
-        if(line.trim().startsWith("#") || line.trim().isEmpty()) {
+        if (line.trim()
+            .startsWith("#")
+            || line.trim()
+                .isEmpty()) {
             return null;
         }
-        boolean not = line.trim().startsWith("!");
+        boolean not = line.trim()
+            .startsWith("!");
         String fileName = null;
         String path = null;
         String type = null;
@@ -46,83 +51,91 @@ public class LocalConfigEntry {
         Map<String, String> parameters = new HashMap<>();
         StringBuilder buffer = new StringBuilder();
         boolean isQuoted = false;
-        for(int i = 0; i < line.length(); i++) {
+        for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if(c == ']') {
+            if (c == ']') {
                 isQuoted = false;
                 continue;
-            } else if(c == '[' && !isQuoted) {
+            } else if (c == '[' && !isQuoted) {
                 isQuoted = true;
                 continue;
-            } else if(c == '/' && !isQuoted) {
-                if(fileName == null) {
-                    fileName = buffer.toString().trim();
-                    if(not) {
+            } else if (c == '/' && !isQuoted) {
+                if (fileName == null) {
+                    fileName = buffer.toString()
+                        .trim();
+                    if (not) {
                         fileName = fileName.substring(1);
                     }
-                } else if(path == null) {
+                } else if (path == null) {
                     path = buffer.toString();
-                } else if(name == null) {
+                } else if (name == null) {
                     logger.error("Error in line '{}': duplicate path indicator '/' - use [] to escape", line);
                     return null;
                 }
                 buffer = new StringBuilder();
                 continue;
-            } else if(c == ':' && !isQuoted) {
-                if(type != null) {
+            } else if (c == ':' && !isQuoted) {
+                if (type != null) {
                     logger.error("Error in line '{}': duplicate type indicator ':' - use [] to escape", line);
                     return null;
                 }
                 type = String.valueOf(line.charAt(i - 1));
                 buffer = new StringBuilder();
                 continue;
-            } else if(c == '=' && !isQuoted) {
-                if(!withValue) {
-                    logger.error("Error in line '{}': invalid value indicator '=' - values not allowed in this file", line);
+            } else if (c == '=' && !isQuoted) {
+                if (!withValue) {
+                    logger.error(
+                        "Error in line '{}': invalid value indicator '=' - values not allowed in this file",
+                        line);
                     return null;
                 }
                 name = buffer.toString();
                 buffer = new StringBuilder();
                 continue;
-            } else if(c == '$' && !isQuoted) {
-                if(!withValue && name == null) {
-                    name = buffer.toString().trim();
-                } else if(withValue && value == null){
-                    value = buffer.toString().trim();
+            } else if (c == '$' && !isQuoted) {
+                if (!withValue && name == null) {
+                    name = buffer.toString()
+                        .trim();
+                } else if (withValue && value == null) {
+                    value = buffer.toString()
+                        .trim();
                 }
                 buffer = new StringBuilder();
                 int parameterEnd = line.indexOf(' ', i);
-                if(parameterEnd == -1) {
+                if (parameterEnd == -1) {
                     parameterEnd = line.length();
                 }
-                String[] parameter = line.substring(i + 1, parameterEnd).split("=");
-                if(parameter.length == 1) {
+                String[] parameter = line.substring(i + 1, parameterEnd)
+                    .split("=");
+                if (parameter.length == 1) {
                     parameters.put(parameter[0], null);
                 } else {
                     parameters.put(parameter[0], parameter[1]);
                 }
                 i = parameterEnd;
                 continue;
-            } else if(c == '*' && !isQuoted) {
-                if(fileName == null) {
+            } else if (c == '*' && !isQuoted) {
+                if (fileName == null) {
                     logger.error("Error in line '{}': wildcard '*' not allowed in filenames - use [] to escape", line);
                     return null;
                 }
             }
             buffer.append(c);
         }
-        if(path == null || path.isEmpty()) {
+        if (path == null || path.isEmpty()) {
             path = "*";
         }
-        if(type == null || type.isEmpty()) {
+        if (type == null || type.isEmpty()) {
             type = "*";
         }
         if (!withValue && name == null) {
-            name = buffer.toString().trim();
-        } else if(withValue && value == null) {
-            value = buffer.toString().trim();
+            name = buffer.toString()
+                .trim();
+        } else if (withValue && value == null) {
+            value = buffer.toString()
+                .trim();
         }
-        if(name.endsWith("<>")) {
+        if (name.endsWith("<>")) {
             type += "<>";
             name = name.substring(0, name.length() - 2);
         }
@@ -142,7 +155,7 @@ public class LocalConfigEntry {
     }
 
     public String escape(String s) {
-        if(s.contains("/")) {
+        if (s.contains("/")) {
             return "[" + s + "]";
         }
         return s;
@@ -160,13 +173,13 @@ public class LocalConfigEntry {
     }
 
     private boolean passesWithWildcard(String s, String t) {
-        if(s.equals("*") || t.equals("*")) {
+        if (s.equals("*") || t.equals("*")) {
             return true;
         }
         wildcardMatcher.reset(s);
         StringBuffer sb = new StringBuffer();
-        while(wildcardMatcher.find()) {
-            if(wildcardMatcher.group(1) != null) {
+        while (wildcardMatcher.find()) {
+            if (wildcardMatcher.group(1) != null) {
                 wildcardMatcher.appendReplacement(sb, ".*");
             } else {
                 wildcardMatcher.appendReplacement(sb, "\\\\Q" + wildcardMatcher.group(0) + "\\\\E");

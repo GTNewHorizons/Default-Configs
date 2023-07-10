@@ -1,6 +1,7 @@
 package net.blay09.mods.defaultkeys.coremod;
 
 import net.minecraft.launchwrapper.IClassTransformer;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -20,9 +21,9 @@ public class DefaultOptionsClassTransformer implements IClassTransformer {
     @Override
     public byte[] transform(String className, String transformedClassName, byte[] bytes) {
         String methodName;
-        if(className.equals(OBF_CLASS)) {
+        if (className.equals(OBF_CLASS)) {
             methodName = OBF_METHOD;
-        } else if(className.equals(MCP_CLASS)) {
+        } else if (className.equals(MCP_CLASS)) {
             methodName = MCP_METHOD;
         } else {
             return bytes;
@@ -33,7 +34,14 @@ public class DefaultOptionsClassTransformer implements IClassTransformer {
         for (MethodNode method : classNode.methods) {
             if (method.name.equals(methodName) && method.desc.equals(METHOD_DESC)) {
                 AbstractInsnNode node = method.instructions.get(0);
-                method.instructions.insertBefore(node, new MethodInsnNode(Opcodes.INVOKESTATIC, "net/blay09/mods/defaultkeys/DefaultKeys", "preStartGame", "()V", false));
+                method.instructions.insertBefore(
+                    node,
+                    new MethodInsnNode(
+                        Opcodes.INVOKESTATIC,
+                        "net/blay09/mods/defaultkeys/DefaultKeys",
+                        "preStartGame",
+                        "()V",
+                        false));
                 break;
             }
         }
