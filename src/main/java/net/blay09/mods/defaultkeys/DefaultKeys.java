@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Mod(modid = DefaultKeys.MOD_ID, name = "Default Options")
+@Mod(acceptableRemoteVersions = "*", acceptedMinecraftVersions = "[1.7.10]", modid = DefaultKeys.MOD_ID, name = "Default Configs", version = Tags.VERSION)
 public class DefaultKeys {
 
     public static final String MOD_ID = "defaultkeys";
