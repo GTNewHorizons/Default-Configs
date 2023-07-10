@@ -11,12 +11,12 @@ public class CommandDefaultOptions extends CommandBase {
 
     @Override
     public String getCommandName() {
-        return "defaultoptions";
+        return "defaultconfigs";
     }
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/defaultoptions (saveAll|saveKeys|saveOptions|createUpdateFile)";
+        return "/defaultconfigs (saveAll|saveKeys|saveOptions|createUpdateFile)";
     }
 
     @Override

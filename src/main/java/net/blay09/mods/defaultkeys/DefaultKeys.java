@@ -52,7 +52,6 @@ public class DefaultKeys {
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    @SuppressWarnings("unused")
     public static void preStartGame() {
         File mcDataDir = Minecraft.getMinecraft().mcDataDir;
         File optionsFile = new File(mcDataDir, "options.txt");
@@ -260,7 +259,6 @@ public class DefaultKeys {
     }
 
     @SubscribeEvent
-    @SuppressWarnings("unused")
     public void finishMinecraftLoading(GuiOpenEvent event) {
         if (!initialized && event.gui instanceof GuiMainMenu) {
             reloadDefaultMappings();
