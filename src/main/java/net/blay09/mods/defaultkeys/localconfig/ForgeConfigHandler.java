@@ -1,13 +1,17 @@
 package net.blay09.mods.defaultkeys.localconfig;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ForgeConfigHandler {
 
@@ -16,7 +20,7 @@ public class ForgeConfigHandler {
     public static void backup(PrintWriter writer, List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -28,24 +32,24 @@ public class ForgeConfigHandler {
         boolean listFlag = false;
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             String line;
-            lineLoop:while ((line = reader.readLine()) != null) {
+            lineLoop: while ((line = reader.readLine()) != null) {
                 StringBuilder buffer = new StringBuilder();
-                charLoop:for (int i = 0; i < line.length(); i++) {
+                charLoop: for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
-                    if(isInQuotes) {
+                    if (isInQuotes) {
                         if (c == '"') {
                             isInQuotes = false;
                         }
                         buffer.append(c);
-                    } else if(isInList) {
-                        if(c == '>') {
+                    } else if (isInList) {
+                        if (c == '>') {
                             isInList = false;
                             listFlag = false;
-                            if(consumeList) {
+                            if (consumeList) {
                                 writer.println(">");
                             }
-                        } else if(consumeList) {
-                            if(listFlag) {
+                        } else if (consumeList) {
+                            if (listFlag) {
                                 writer.print(", ");
                             }
                             writer.print(line);
@@ -63,7 +67,9 @@ public class ForgeConfigHandler {
                                 buffer.append(c);
                                 break;
                             case '{':
-                                categoryPath.add(buffer.toString().trim());
+                                categoryPath.add(
+                                    buffer.toString()
+                                        .trim());
                                 buffer = new StringBuilder();
                                 break;
                             case '}':
@@ -73,16 +79,17 @@ public class ForgeConfigHandler {
                                 isInList = true;
                                 consumeList = false;
                                 category = StringUtils.join(categoryPath, ".");
-                                name = buffer.toString().trim();
+                                name = buffer.toString()
+                                    .trim();
                                 type = name.substring(0, 1);
                                 name = name.substring(2);
-                                for(int j = 0; j < entries.size(); j++) {
+                                for (int j = 0; j < entries.size(); j++) {
                                     LocalConfigEntry entry = entries.get(j);
-                                    if(entry.passesProperty(category, name, type)) {
+                                    if (entry.passesProperty(category, name, type)) {
                                         foundProperty[j] = true;
-                                        if(entry.containsWildcard()) {
-                                            for(LocalConfigEntry notEntry : notEntries) {
-                                                if(notEntry.passesProperty(category, name, type)) {
+                                        if (entry.containsWildcard()) {
+                                            for (LocalConfigEntry notEntry : notEntries) {
+                                                if (notEntry.passesProperty(category, name, type)) {
                                                     continue lineLoop;
                                                 }
                                             }
@@ -96,22 +103,24 @@ public class ForgeConfigHandler {
                                 continue lineLoop;
                             case '=':
                                 category = StringUtils.join(categoryPath, ".");
-                                name = buffer.toString().trim();
+                                name = buffer.toString()
+                                    .trim();
                                 type = name.substring(0, 1);
                                 name = name.substring(2);
                                 String value = line.substring(i + 1);
-                                for(int j = 0; j < entries.size(); j++) {
+                                for (int j = 0; j < entries.size(); j++) {
                                     LocalConfigEntry entry = entries.get(j);
-                                    if(entry.passesProperty(category, name, type)) {
+                                    if (entry.passesProperty(category, name, type)) {
                                         foundProperty[j] = true;
-                                        if(entry.containsWildcard()) {
-                                            for(LocalConfigEntry notEntry : notEntries) {
-                                                if(notEntry.passesProperty(category, name, type)) {
+                                        if (entry.containsWildcard()) {
+                                            for (LocalConfigEntry notEntry : notEntries) {
+                                                if (notEntry.passesProperty(category, name, type)) {
                                                     continue lineLoop;
                                                 }
                                             }
                                         }
-                                        writer.println(entry.getIdentifier(entry.file, category, type, name) + "=" + value);
+                                        writer.println(
+                                            entry.getIdentifier(entry.file, category, type, name) + "=" + value);
                                         break;
                                     }
                                 }
@@ -122,9 +131,12 @@ public class ForgeConfigHandler {
                     }
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to backup local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to backup local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {
@@ -135,7 +147,7 @@ public class ForgeConfigHandler {
     public static void restore(List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -143,31 +155,31 @@ public class ForgeConfigHandler {
         File backupFile = new File(configFile.getParentFile(), configFile.getName() + ".bak");
         try {
             FileUtils.copyFile(configFile, backupFile);
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error("Could not create backup file {}: {}", backupFile, e);
         }
         try {
             List<String> lines = FileUtils.readLines(configFile);
-            try(PrintWriter writer = new PrintWriter(configFile)) {
+            try (PrintWriter writer = new PrintWriter(configFile)) {
                 List<String> categoryPath = new ArrayList<>();
                 boolean isInQuotes = false;
                 boolean isInList = false;
                 boolean discardList = false;
-                lineLoop:for (String line : lines) {
+                lineLoop: for (String line : lines) {
                     StringBuilder buffer = new StringBuilder();
-                    charLoop:for (int i = 0; i < line.length(); i++) {
+                    charLoop: for (int i = 0; i < line.length(); i++) {
                         char c = line.charAt(i);
-                        if(isInQuotes) {
+                        if (isInQuotes) {
                             if (c == '"') {
                                 isInQuotes = false;
                             }
                             buffer.append(c);
-                        } else if(isInList) {
-                            if(c == '>') {
+                        } else if (isInList) {
+                            if (c == '>') {
                                 isInList = false;
                             }
-                            if(discardList) {
-                               continue lineLoop;
+                            if (discardList) {
+                                continue lineLoop;
                             }
                         } else {
                             String category;
@@ -181,7 +193,9 @@ public class ForgeConfigHandler {
                                     buffer.append(c);
                                     break;
                                 case '{':
-                                    categoryPath.add(buffer.toString().trim());
+                                    categoryPath.add(
+                                        buffer.toString()
+                                            .trim());
                                     buffer = new StringBuilder();
                                     break;
                                 case '}':
@@ -191,16 +205,17 @@ public class ForgeConfigHandler {
                                     isInList = true;
                                     discardList = false;
                                     category = StringUtils.join(categoryPath, ".");
-                                    name = buffer.toString().trim();
+                                    name = buffer.toString()
+                                        .trim();
                                     type = name.substring(0, 1);
                                     name = name.substring(2);
-                                    for(int j = 0; j < entries.size(); j++) {
+                                    for (int j = 0; j < entries.size(); j++) {
                                         LocalConfigEntry entry = entries.get(j);
-                                        if(entry.passesProperty(category, name, type)) {
+                                        if (entry.passesProperty(category, name, type)) {
                                             foundProperty[j] = true;
-                                            if(entry.containsWildcard()) {
-                                                for(LocalConfigEntry notEntry : notEntries) {
-                                                    if(notEntry.passesProperty(category, name, type)) {
+                                            if (entry.containsWildcard()) {
+                                                for (LocalConfigEntry notEntry : notEntries) {
+                                                    if (notEntry.passesProperty(category, name, type)) {
                                                         break charLoop;
                                                     }
                                                 }
@@ -223,16 +238,17 @@ public class ForgeConfigHandler {
                                     break charLoop;
                                 case '=':
                                     category = StringUtils.join(categoryPath, ".");
-                                    name = buffer.toString().trim();
+                                    name = buffer.toString()
+                                        .trim();
                                     type = name.substring(0, 1);
                                     name = name.substring(2);
-                                    for(int j = 0; j < entries.size(); j++) {
+                                    for (int j = 0; j < entries.size(); j++) {
                                         LocalConfigEntry entry = entries.get(j);
-                                        if(entry.passesProperty(category, name, type)) {
+                                        if (entry.passesProperty(category, name, type)) {
                                             foundProperty[j] = true;
-                                            if(entry.containsWildcard()) {
-                                                for(LocalConfigEntry notEntry : notEntries) {
-                                                    if(notEntry.passesProperty(category, name, type)) {
+                                            if (entry.containsWildcard()) {
+                                                for (LocalConfigEntry notEntry : notEntries) {
+                                                    if (notEntry.passesProperty(category, name, type)) {
                                                         break charLoop;
                                                     }
                                                 }
@@ -250,9 +266,12 @@ public class ForgeConfigHandler {
                     writer.println(line);
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to restore local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to restore local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {
@@ -266,9 +285,9 @@ public class ForgeConfigHandler {
     }
 
     private static int getIndent(String line) {
-        for(int i = 0; i < line.length(); i++) {
+        for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if(!Character.isWhitespace(c) || c != '\t') {
+            if (!Character.isWhitespace(c) || c != '\t') {
                 return i;
             }
         }

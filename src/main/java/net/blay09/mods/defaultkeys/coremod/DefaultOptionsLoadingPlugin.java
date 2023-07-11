@@ -1,8 +1,8 @@
 package net.blay09.mods.defaultkeys.coremod;
 
-import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
-
 import java.util.Map;
+
+import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 
 @IFMLLoadingPlugin.Name(value = "Default Keyconfig & Options")
 @IFMLLoadingPlugin.MCVersion(value = "1.7.10")
@@ -12,9 +12,7 @@ public class DefaultOptionsLoadingPlugin implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] {
-            "net.blay09.mods.defaultkeys.coremod.DefaultOptionsClassTransformer"
-        };
+        return new String[] { "net.blay09.mods.defaultkeys.coremod.DefaultOptionsClassTransformer" };
     }
 
     @Override

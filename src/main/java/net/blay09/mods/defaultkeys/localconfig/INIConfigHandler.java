@@ -1,12 +1,16 @@
 package net.blay09.mods.defaultkeys.localconfig;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
 
 public class INIConfigHandler {
 
@@ -15,7 +19,7 @@ public class INIConfigHandler {
     public static void backup(PrintWriter writer, List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -24,11 +28,11 @@ public class INIConfigHandler {
         boolean isInQuotes = false;
         try (BufferedReader reader = new BufferedReader(new FileReader(configFile))) {
             String line;
-            lineLoop:while ((line = reader.readLine()) != null) {
+            lineLoop: while ((line = reader.readLine()) != null) {
                 StringBuilder buffer = new StringBuilder();
-                charLoop:for (int i = 0; i < line.length(); i++) {
+                charLoop: for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);
-                    if(isInQuotes) {
+                    if (isInQuotes) {
                         if (c == '"') {
                             isInQuotes = false;
                         }
@@ -50,20 +54,23 @@ public class INIConfigHandler {
                                 buffer = new StringBuilder();
                                 break;
                             case '=':
-                                name = buffer.toString().trim();
-                                String value = line.substring(i + 1).trim();
-                                for(int j = 0; j < entries.size(); j++) {
+                                name = buffer.toString()
+                                    .trim();
+                                String value = line.substring(i + 1)
+                                    .trim();
+                                for (int j = 0; j < entries.size(); j++) {
                                     LocalConfigEntry entry = entries.get(j);
-                                    if(entry.passesProperty(category, name, "*")) {
+                                    if (entry.passesProperty(category, name, "*")) {
                                         foundProperty[j] = true;
-                                        if(entry.containsWildcard()) {
-                                            for(LocalConfigEntry notEntry : notEntries) {
-                                                if(notEntry.passesProperty(category, name, "*")) {
+                                        if (entry.containsWildcard()) {
+                                            for (LocalConfigEntry notEntry : notEntries) {
+                                                if (notEntry.passesProperty(category, name, "*")) {
                                                     continue lineLoop;
                                                 }
                                             }
                                         }
-                                        writer.println(entry.getIdentifier(entry.file, category, "*", name) + "=" + value);
+                                        writer.println(
+                                            entry.getIdentifier(entry.file, category, "*", name) + "=" + value);
                                         break;
                                     }
                                 }
@@ -74,9 +81,12 @@ public class INIConfigHandler {
                     }
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to backup local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to backup local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {
@@ -87,7 +97,7 @@ public class INIConfigHandler {
     public static void restore(List<LocalConfigEntry> entries, File configFile) {
         boolean[] foundProperty = new boolean[entries.size()];
         List<LocalConfigEntry> notEntries = new ArrayList<>();
-        for(LocalConfigEntry entry : entries) {
+        for (LocalConfigEntry entry : entries) {
             if (entry.not) {
                 notEntries.add(entry);
             }
@@ -95,19 +105,19 @@ public class INIConfigHandler {
         File backupFile = new File(configFile.getParentFile(), configFile.getName() + ".bak");
         try {
             FileUtils.copyFile(configFile, backupFile);
-        } catch(IOException e) {
+        } catch (IOException e) {
             logger.error("Could not create backup file {}: {}", backupFile, e);
         }
         try {
             List<String> lines = FileUtils.readLines(configFile);
-            try(PrintWriter writer = new PrintWriter(configFile)) {
+            try (PrintWriter writer = new PrintWriter(configFile)) {
                 String category = "";
                 boolean isInQuotes = false;
                 for (String line : lines) {
                     StringBuilder buffer = new StringBuilder();
-                    charLoop:for (int i = 0; i < line.length(); i++) {
+                    charLoop: for (int i = 0; i < line.length(); i++) {
                         char c = line.charAt(i);
-                        if(isInQuotes) {
+                        if (isInQuotes) {
                             if (c == '"') {
                                 isInQuotes = false;
                             }
@@ -129,14 +139,15 @@ public class INIConfigHandler {
                                     buffer = new StringBuilder();
                                     break;
                                 case '=':
-                                    name = buffer.toString().trim();
-                                    for(int j = 0; j < entries.size(); j++) {
+                                    name = buffer.toString()
+                                        .trim();
+                                    for (int j = 0; j < entries.size(); j++) {
                                         LocalConfigEntry entry = entries.get(j);
-                                        if(entry.passesProperty(category, name, "*")) {
+                                        if (entry.passesProperty(category, name, "*")) {
                                             foundProperty[j] = true;
-                                            if(entry.containsWildcard()) {
-                                                for(LocalConfigEntry notEntry : notEntries) {
-                                                    if(notEntry.passesProperty(category, name, "*")) {
+                                            if (entry.containsWildcard()) {
+                                                for (LocalConfigEntry notEntry : notEntries) {
+                                                    if (notEntry.passesProperty(category, name, "*")) {
                                                         break charLoop;
                                                     }
                                                 }
@@ -154,9 +165,12 @@ public class INIConfigHandler {
                     writer.println(line);
                 }
             }
-            for(int i = 0; i < foundProperty.length; i++) {
-                if(!foundProperty[i] && !entries.get(i).not) {
-                    logger.warn("Failed to restore local value {}: property not found", entries.get(i).getIdentifier());
+            for (int i = 0; i < foundProperty.length; i++) {
+                if (!foundProperty[i] && !entries.get(i).not) {
+                    logger.warn(
+                        "Failed to restore local value {}: property not found",
+                        entries.get(i)
+                            .getIdentifier());
                 }
             }
         } catch (IOException e) {
