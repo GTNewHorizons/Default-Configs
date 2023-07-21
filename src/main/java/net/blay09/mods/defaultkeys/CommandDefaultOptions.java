@@ -1,11 +1,13 @@
 package net.blay09.mods.defaultkeys;
 
+import java.io.File;
 import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
 
 public class CommandDefaultOptions extends CommandBase {
 
@@ -30,33 +32,34 @@ public class CommandDefaultOptions extends CommandBase {
             throw new WrongUsageException(getCommandUsage(sender));
         }
         if (args[0].equals("createUpdateFile")) {
-            sender.addChatMessage(
-                new ChatComponentText("modpack-update file has been created inside the config directory."));
-            sender.addChatMessage(
-                new ChatComponentText(
-                    "You should always ship that file in your modpack; just leave it there forever."));
-            sender.addChatMessage(
-                new ChatComponentText(
-                    "This will ensure that local player configs defined in localconfig.txt will be restored on updates."));
+            try {
+                new File(Minecraft.getMinecraft().mcDataDir, "modpack-update").createNewFile();
+            } catch (Exception e) {
+                sender.addChatMessage(
+                    new ChatComponentTranslation(
+                        "defaultconfigs.cmd.createUpdateFile.failure",
+                        e.getLocalizedMessage()));
+                DefaultKeys.logger.error("Could not create modpack-update file", e);
+                return;
+            }
+            sender.addChatMessage(new ChatComponentTranslation("defaultconfigs.cmd.createUpdateFile.success"));
             return;
         }
         boolean saveOptions = args[0].equals("saveAll") || args[0].equals("saveOptions");
         boolean saveKeys = args[0].equals("saveAll") || args[0].equals("saveKeys");
         if (saveKeys) {
             if (DefaultKeys.instance.saveDefaultMappings()) {
-                sender.addChatMessage(new ChatComponentText("Successfully saved the key configuration."));
+                sender.addChatMessage(new ChatComponentTranslation("defaultconfigs.cmd.saveKeys.success"));
                 DefaultKeys.instance.reloadDefaultMappings();
             } else {
-                sender.addChatMessage(
-                    new ChatComponentText("Failed saving the key configuration. See the log for more information."));
+                sender.addChatMessage(new ChatComponentTranslation("defaultconfigs.cmd.saveKeys.failure"));
             }
         }
         if (saveOptions) {
             if (DefaultKeys.instance.saveDefaultOptions() && DefaultKeys.instance.saveDefaultOptionsOptiFine()) {
-                sender.addChatMessage(new ChatComponentText("Successfully saved the configuration."));
+                sender.addChatMessage(new ChatComponentTranslation("defaultconfigs.cmd.saveOptions.success"));
             } else {
-                sender.addChatMessage(
-                    new ChatComponentText("Failed saving the configuration. See the log for more information."));
+                sender.addChatMessage(new ChatComponentTranslation("defaultconfigs.cmd.saveOptions.failure"));
             }
         }
         if (!saveOptions && !saveKeys) {
