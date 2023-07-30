@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,10 +80,13 @@ public class EventHandler {
         File modpackUpdate = new File(mcDataDir, "config/modpack-update");
         if (modpackUpdate.exists()) {
             if (restoreLocalConfig()) {
-                // if (!modpackUpdate.delete()) {
-                // logger.error("Could not delete modpack-update file. Delete manually or configs will keep restoring to
-                // this point.");
-                // }
+                try {
+                    Files.delete(modpackUpdate.toPath());
+                } catch (Exception e) {
+                    DefaultKeys.logger.error(
+                        "Could not delete modpack-update file. Delete manually or configs will keep restoring to this point.",
+                        e);
+                }
             }
         } else {
             backupLocalConfig();
