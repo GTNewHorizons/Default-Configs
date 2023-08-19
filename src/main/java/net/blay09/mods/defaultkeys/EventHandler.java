@@ -153,10 +153,11 @@ public class EventHandler {
     private static boolean restoreLocalConfig() {
         DefaultKeys.logger.info("Restoring local config values...");
         File mcDataDir = Minecraft.getMinecraft().mcDataDir;
-        File localConfigFile = new File(mcDataDir, "config/localconfig.txt");
-        if (localConfigFile.exists()) {
-            try (BufferedReader defReader = new BufferedReader(new FileReader(localConfigFile));
-                BufferedReader valReader = new BufferedReader(new FileReader(new File(mcDataDir, "localconfig.cfg")))) {
+        File localConfigDefinitionsFile = new File(mcDataDir, "config/localconfig.txt");
+        File localConfigValuesFile = new File(mcDataDir, "localconfig.cfg");
+        if (localConfigDefinitionsFile.exists() && localConfigValuesFile.exists()) {
+            try (BufferedReader defReader = new BufferedReader(new FileReader(localConfigDefinitionsFile));
+                BufferedReader valReader = new BufferedReader(new FileReader(localConfigValuesFile))) {
                 List<LocalConfigEntry> defEntries = new ArrayList<>();
                 String line;
                 while ((line = defReader.readLine()) != null) {
