@@ -42,18 +42,20 @@ public class ForgeConfigHandler {
                         }
                         buffer.append(c);
                     } else if (isInList) {
-                        if (c == '>') {
+                        if (line.trim().equals(">")) {
                             isInList = false;
                             listFlag = false;
                             if (consumeList) {
-                                writer.println(">");
+                                writer.println();
                             }
+                            continue lineLoop;
                         } else if (consumeList) {
                             if (listFlag) {
                                 writer.print(", ");
                             }
-                            writer.print(line);
+                            writer.print(line.trim().replace(",", ",,"));
                             listFlag = true;
+                            continue lineLoop;
                         }
                     } else {
                         String category;
@@ -96,7 +98,7 @@ public class ForgeConfigHandler {
                                         }
                                         consumeList = true;
                                         writer.print(entry.getIdentifier(entry.file, category, type, name));
-                                        writer.print("=<");
+                                        writer.print("=");
                                         continue lineLoop;
                                     }
                                 }
@@ -175,7 +177,7 @@ public class ForgeConfigHandler {
                             }
                             buffer.append(c);
                         } else if (isInList) {
-                            if (c == '>') {
+                            if (line.trim().equals(">")) {
                                 isInList = false;
                             }
                             if (discardList) {
@@ -221,17 +223,16 @@ public class ForgeConfigHandler {
                                                 }
                                             }
                                             discardList = true;
-                                            String indent = StringUtils.repeat(' ', getIndent(line));
-                                            writer.print(indent);
-                                            writer.println('<');
-                                            String[] values = entry.value.split(",");
+                                            String indent = StringUtils.repeat(' ', categoryPath.size() * 4);
+                                            writer.println(line);
+                                            String[] values = entry.value.replaceAll(",,", "\n").split(",");
                                             for (String value : values) {
                                                 writer.print(indent);
                                                 writer.print("    ");
-                                                writer.println(value.trim());
+                                                writer.println(value.replace('\n', ',').trim());
                                             }
                                             writer.print(indent);
-                                            writer.println('>');
+                                            writer.println(" >");
                                             continue lineLoop;
                                         }
                                     }
@@ -287,7 +288,7 @@ public class ForgeConfigHandler {
     private static int getIndent(String line) {
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
-            if (!Character.isWhitespace(c) || c != '\t') {
+            if (!Character.isWhitespace(c) && c != '\t') {
                 return i;
             }
         }
