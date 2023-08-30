@@ -42,14 +42,17 @@ public class ForgeConfigHandler {
                         }
                         buffer.append(c);
                     } else if (isInList) {
-                        if (line.trim().equals(">")) {
+                        if (line.trim()
+                            .equals(">")) {
                             isInList = false;
                             if (consumeList) {
                                 writer.println();
                             }
                             continue lineLoop;
                         } else if (consumeList) {
-                            writer.print(line.trim().replace(",", ",,"));
+                            writer.print(
+                                line.trim()
+                                    .replace(",", ",,"));
                             writer.print(", ");
                             continue lineLoop;
                         }
@@ -173,7 +176,8 @@ public class ForgeConfigHandler {
                             }
                             buffer.append(c);
                         } else if (isInList) {
-                            if (line.trim().equals(">")) {
+                            if (line.trim()
+                                .equals(">")) {
                                 isInList = false;
                             }
                             if (discardList) {
@@ -222,13 +226,15 @@ public class ForgeConfigHandler {
                                             String indent = StringUtils.repeat(' ', categoryPath.size() * 4);
                                             writer.println(line);
                                             String escapedValue = entry.value.replaceAll(",,", "\n");
-                                            List<String> values = Arrays.asList(StringUtils.splitPreserveAllTokens(escapedValue, ","));
-                                            if (!values.isEmpty())
-                                                values = values.subList(0, values.size() - 1);
+                                            List<String> values = Arrays
+                                                .asList(StringUtils.splitPreserveAllTokens(escapedValue, ","));
+                                            if (!values.isEmpty()) values = values.subList(0, values.size() - 1);
                                             for (String value : values) {
                                                 writer.print(indent);
                                                 writer.print("    ");
-                                                writer.println(value.replace('\n', ',').trim());
+                                                writer.println(
+                                                    value.replace('\n', ',')
+                                                        .trim());
                                             }
                                             writer.print(indent);
                                             writer.println(" >");
