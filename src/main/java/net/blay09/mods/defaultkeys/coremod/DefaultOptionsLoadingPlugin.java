@@ -7,7 +7,6 @@ import cpw.mods.fml.relauncher.IFMLLoadingPlugin;
 @IFMLLoadingPlugin.Name(value = "Default Keyconfig & Options")
 @IFMLLoadingPlugin.MCVersion(value = "1.7.10")
 @IFMLLoadingPlugin.TransformerExclusions(value = "net.blay09.mods.defaultkeys.coremod")
-@IFMLLoadingPlugin.SortingIndex(value = 1001)
 public class DefaultOptionsLoadingPlugin implements IFMLLoadingPlugin {
 
     @Override
