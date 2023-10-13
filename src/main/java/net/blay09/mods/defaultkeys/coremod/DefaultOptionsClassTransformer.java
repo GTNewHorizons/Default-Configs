@@ -16,7 +16,7 @@ public class DefaultOptionsClassTransformer implements IClassTransformer {
         if (transformedName.equals("net.minecraft.client.Minecraft")) {
             ClassNode classNode = new ClassNode();
             ClassReader classReader = new ClassReader(basicClass);
-            classReader.accept(classNode, ClassReader.SKIP_DEBUG);
+            classReader.accept(classNode, 0);
             for (MethodNode method : classNode.methods) {
                 if ((method.name.equals("ag") || method.name.equals("startGame")) && method.desc.equals("()V")) {
                     method.instructions.insert(
