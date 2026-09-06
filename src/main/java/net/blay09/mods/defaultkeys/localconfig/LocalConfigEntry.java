@@ -3,8 +3,6 @@ package net.blay09.mods.defaultkeys.localconfig;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,8 +10,6 @@ import org.apache.logging.log4j.Logger;
 public class LocalConfigEntry {
 
     private static Logger logger = LogManager.getLogger();
-    private static Pattern wildcardQuote = Pattern.compile("[^*]+|(\\*)");
-    private static Matcher wildcardMatcher = wildcardQuote.matcher("");
 
     public final boolean not;
     public final String file;
@@ -162,30 +158,43 @@ public class LocalConfigEntry {
     }
 
     public boolean passesProperty(String category, String name, String type) {
-        boolean passesCategory = passesWithWildcard(this.category, category);
-        boolean passesName = passesWithWildcard(this.name, name);
-        boolean passesType = passesWithWildcard(this.type, type);
-        return passesCategory && passesName && passesType;
+        return passesWithWildcard(this.category, category) && passesWithWildcard(this.name, name)
+            && passesWithWildcard(this.type, type);
     }
 
     public boolean containsWildcard() {
         return category.indexOf('*') != -1 || name.indexOf('*') != -1 || type.indexOf('*') != -1;
     }
 
-    private boolean passesWithWildcard(String s, String t) {
-        if (s.equals("*") || t.equals("*")) {
+    private boolean passesWithWildcard(String pattern, String value) {
+        if (pattern.equals("*") || value.equals("*")) {
             return true;
         }
-        wildcardMatcher.reset(s);
-        StringBuffer sb = new StringBuffer();
-        while (wildcardMatcher.find()) {
-            if (wildcardMatcher.group(1) != null) {
-                wildcardMatcher.appendReplacement(sb, ".*");
+
+        int patternIndex = 0;
+        int valueIndex = 0;
+        int starIndex = -1;
+        int starMatchIndex = 0;
+
+        while (valueIndex < value.length()) {
+            if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == value.charAt(valueIndex)) {
+                patternIndex++;
+                valueIndex++;
+            } else if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == '*') {
+                starIndex = patternIndex++;
+                starMatchIndex = valueIndex;
+            } else if (starIndex != -1) {
+                patternIndex = starIndex + 1;
+                valueIndex = ++starMatchIndex;
             } else {
-                wildcardMatcher.appendReplacement(sb, "\\\\Q" + wildcardMatcher.group(0) + "\\\\E");
+                return false;
             }
         }
-        String regex = sb.toString();
-        return t.matches(regex);
+
+        while (patternIndex < pattern.length() && pattern.charAt(patternIndex) == '*') {
+            patternIndex++;
+        }
+
+        return patternIndex == pattern.length();
     }
 }
