@@ -177,12 +177,12 @@ public class LocalConfigEntry {
         int starMatchIndex = 0;
 
         while (valueIndex < value.length()) {
-            if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == value.charAt(valueIndex)) {
-                patternIndex++;
-                valueIndex++;
-            } else if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == '*') {
+            if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == '*') {
                 starIndex = patternIndex++;
                 starMatchIndex = valueIndex;
+            } else if (patternIndex < pattern.length() && pattern.charAt(patternIndex) == value.charAt(valueIndex)) {
+                patternIndex++;
+                valueIndex++;
             } else if (starIndex != -1) {
                 patternIndex = starIndex + 1;
                 valueIndex = ++starMatchIndex;
