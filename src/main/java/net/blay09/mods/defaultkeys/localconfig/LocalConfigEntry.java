@@ -129,8 +129,7 @@ public class LocalConfigEntry {
             name = buffer.toString()
                 .trim();
         } else if (withValue && value == null) {
-            value = buffer.toString()
-                .trim();
+            value = buffer.toString();
         }
         if (name != null && name.endsWith("<>")) {
             type += "<>";
