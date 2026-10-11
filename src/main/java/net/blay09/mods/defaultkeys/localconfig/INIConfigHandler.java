@@ -70,7 +70,7 @@ public class INIConfigHandler {
                                             }
                                         }
                                         writer.println(
-                                            entry.getIdentifier(entry.file, category, "*", name) + "=" + value);
+                                            entry.asLocalConfigStatement(entry.file, category, "*", name, value));
                                         break;
                                     }
                                 }

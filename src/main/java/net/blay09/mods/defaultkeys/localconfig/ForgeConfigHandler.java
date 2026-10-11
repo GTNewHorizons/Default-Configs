@@ -121,7 +121,7 @@ public class ForgeConfigHandler {
                                             }
                                         }
                                         writer.println(
-                                            entry.getIdentifier(entry.file, category, type, name) + "=" + value);
+                                            entry.asLocalConfigStatement(entry.file, category, type, name, value));
                                         break;
                                     }
                                 }
@@ -225,7 +225,7 @@ public class ForgeConfigHandler {
                                             discardList = true;
                                             String indent = StringUtils.repeat(' ', categoryPath.size() * 4);
                                             writer.println(line);
-                                            String escapedValue = entry.value.replaceAll(",,", "\n");
+                                            String escapedValue = entry.value.replace(",,", "\n");
                                             List<String> values = Arrays
                                                 .asList(StringUtils.splitPreserveAllTokens(escapedValue, ","));
                                             if (!values.isEmpty()) values = values.subList(0, values.size() - 1);
