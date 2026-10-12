@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class LocalConfigEntry {
 
-    private static Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger();
 
     public final boolean not;
     public final String file;
@@ -128,18 +129,21 @@ public class LocalConfigEntry {
             name = buffer.toString()
                 .trim();
         } else if (withValue && value == null) {
-            value = buffer.toString()
-                .trim();
+            value = buffer.toString();
         }
-        if (name.endsWith("<>")) {
+        if (name != null && name.endsWith("<>")) {
             type += "<>";
             name = name.substring(0, name.length() - 2);
         }
         return new LocalConfigEntry(fileName, type, path, name, value, not, parameters);
     }
 
+    public String asLocalConfigStatement(String file, String category, String type, String name, String value) {
+        return getIdentifier(file, category, type, name) + "=" + escapeValue(value);
+    }
+
     public String getIdentifier(String file, String category, String type, String name) {
-        return escape(file) + "/" + escape(category) + "/" + type + ":" + name;
+        return escapeValue(file) + "/" + escapeValue(category) + "/" + type + ":" + name;
     }
 
     public String getIdentifier() {
@@ -147,11 +151,11 @@ public class LocalConfigEntry {
     }
 
     public String getFormat() {
-        return parameters.containsKey("format") ? parameters.get("format") : "forge";
+        return parameters.getOrDefault("format", "forge");
     }
 
-    public String escape(String s) {
-        if (s.contains("/")) {
+    public static String escapeValue(String s) {
+        if (StringUtils.containsAny(s, "/*:")) {
             return "[" + s + "]";
         }
         return s;
